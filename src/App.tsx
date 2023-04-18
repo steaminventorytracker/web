@@ -1,20 +1,30 @@
+import InventoryPage from "./inventory/InventoryPage";
+import { io } from "socket.io-client";
+import { useEffect } from "react";
+
+export const socket = io("ws://localhost:3000", {
+  path: "/socket",
+  transports: ["websocket"],
+});
+
 function App() {
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+
+    socket.on("connect_error", (err) => {
+      console.log(`connect_error due to ${err.message}`);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
-    <div className={"w-screen h-screen flex justify-center items-center"}>
-      <div className={"flex"}>
-        <p className={"text-6xl"}>
-          <a
-            href={"https://github.com/olivier-deschenes"}
-            className={"text-blue-500 hover:underline"}
-            target={"_blank"}
-            rel="noreferrer"
-          >
-            olivier-deschenes
-          </a>{" "}
-          <code className={"bg-gray-100 p-0.5 rounded"}>React</code> starter
-          kit.
-        </p>
-      </div>
+    <div className={""}>
+      <InventoryPage />
     </div>
   );
 }

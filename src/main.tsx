@@ -5,9 +5,9 @@ import App from "./App";
 import "./index.scss";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <BrowserRouter>
+  <BrowserRouter>
+    <div className={"min-w-screen min-h-screen dark:bg-slate-950"}>
       <App />
-    </BrowserRouter>
-  </React.StrictMode>
+    </div>
+  </BrowserRouter>
 );
