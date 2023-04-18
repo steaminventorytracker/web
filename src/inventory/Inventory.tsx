@@ -98,7 +98,7 @@ function Inventory({
     return ids.reduce((acc, id) => {
       const inventory = inventories[id];
       const item = inventory.Item;
-      const price = Number(item.Price.at(0)?.medianPrice);
+      const price = Number(item.Price?.at(0)?.medianPrice);
       return acc + inventory.count * price;
     }, 0);
   }, [ids, inventories]);

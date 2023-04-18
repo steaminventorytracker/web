@@ -8,7 +8,7 @@ function InventoryPage() {
     null
   );
 
-  const vodox = "76561198102036162";
+  // const vodox = "76561198102036162";
   const opaxx = "76561198078812689";
 
   const [steamId, setSteamId] = useState<string>(opaxx);
@@ -32,7 +32,7 @@ function InventoryPage() {
     const inventoryIds = data.map((inventoryItem) => inventoryItem.Item.id);
     const formattedData = data.reduce((acc, inventoryItem) => {
       const item = inventoryItem.Item;
-      const price = Number(item.Price.at(0)?.medianPrice);
+      const price = Number(item.Price?.at(0)?.medianPrice);
       const formattedItem = {
         ...inventoryItem,
         total: inventoryItem.count * price,
