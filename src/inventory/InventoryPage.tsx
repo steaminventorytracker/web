@@ -14,7 +14,7 @@ function InventoryPage() {
   const [steamId, setSteamId] = useState<string>(opaxx);
 
   const handleFetch = useCallback(async () => {
-    const response = await fetch("http://localhost:3000/inventory/" + steamId);
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/inventory/` + steamId);
     const data = await response.json();
     setData(data);
   }, [steamId]);

@@ -2,7 +2,7 @@ import InventoryPage from "./inventory/InventoryPage";
 import { io } from "socket.io-client";
 import { useEffect } from "react";
 
-export const socket = io("ws://localhost:3000", {
+export const socket = io(import.meta.env.VITE_SOCKET_URL, {
   path: "/socket",
   transports: ["websocket"],
 });

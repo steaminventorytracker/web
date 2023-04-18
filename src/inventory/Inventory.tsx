@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { InventoryItem } from "../types/api";
 import Item, { currencyFormatter } from "./Item";
-import Job from "./job/Job";
 
 export type InventoryItemData = InventoryItem & { total: number };
 
