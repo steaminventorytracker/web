@@ -1,19 +1,14 @@
-import React, { useMemo } from "react";
-import { InventoryItem } from "../types/api";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { InventoryItem, JobResponse } from "../types/api";
 import Item, { currencyFormatter } from "./Item";
+import { useNavigate, useParams } from "react-router-dom";
 
 export type InventoryItemData = InventoryItem & { total: number };
 
-type InventoryProps = {
-  inventories: Record<string, InventoryItemData>;
-  ids: string[];
-};
+type Inventories = Record<string, InventoryItemData>;
 
 const handleSortByPrice =
-  (
-    priceSort: "asc" | "desc" | null,
-    inventories: InventoryProps["inventories"]
-  ) =>
+  (priceSort: "asc" | "desc" | null, inventories: Inventories) =>
   (idA: string, idB: string) => {
     const inventoryA = inventories[idA];
     const inventoryB = inventories[idB];
@@ -29,10 +24,7 @@ const handleSortByPrice =
   };
 
 const handleSortByCount =
-  (
-    countSort: "asc" | "desc" | null,
-    inventories: InventoryProps["inventories"]
-  ) =>
+  (countSort: "asc" | "desc" | null, inventories: Inventories) =>
   (idA: string, idB: string) => {
     const inventoryA = inventories[idA];
     const inventoryB = inventories[idB];
@@ -47,16 +39,52 @@ const handleSortByCount =
     return 0;
   };
 
-function Inventory({
-  inventories,
-  ids,
-}: React.PropsWithoutRef<InventoryProps>) {
-  const [priceSort, setPriceSort] = React.useState<"asc" | "desc" | null>(
-    "desc"
-  );
-  const [countSort, setCountSort] = React.useState<"asc" | "desc" | null>(null);
+type SortType = "asc" | "desc" | null;
+
+function Inventory() {
+  const [priceSort, setPriceSort] = React.useState<SortType>("desc");
+  const [countSort, setCountSort] = React.useState<SortType>(null);
+  const [inventories, setInventories] = React.useState<Inventories>({});
+  const [ids, setIds] = React.useState<string[]>([]);
+
+  const { steamId } = useParams();
+  const navigate = useNavigate();
 
   const [marketHashName, setMarketHashName] = React.useState<string>("");
+
+  const handleFetchData = useCallback(async () => {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/inventory/` + steamId
+    );
+    const data = (await response.json()) as InventoryItem[] | JobResponse;
+
+    if ("job" in data) {
+      navigate("/job/" + data.job.id, {
+        state: { job: data.job, steamId },
+      });
+
+      return;
+    }
+
+    setInventories(() => {
+      return data.reduce<Inventories>((acc, inventory) => {
+        const price = inventory.Item.Price.at(0)?.medianPrice ?? 0;
+
+        acc[inventory.Item.id] = {
+          ...inventory,
+          total: Number(price) * inventory.count,
+        };
+
+        return acc;
+      }, {});
+    });
+
+    setIds(() => data.map((inventory) => inventory.Item.id));
+  }, [navigate, steamId]);
+
+  useEffect(() => {
+    handleFetchData();
+  });
 
   const renderedIds = useMemo(() => {
     let sortedIds = [...ids];
@@ -106,11 +134,10 @@ function Inventory({
   const handlePriceSortAction = () => {
     switch (priceSort) {
       case "asc":
-        setCountSort(null);
-        setPriceSort("desc");
+        setPriceSort(null);
         break;
       case "desc":
-        setPriceSort(null);
+        setPriceSort("asc");
         break;
       default:
         setCountSort(null);
@@ -121,11 +148,10 @@ function Inventory({
   const handleCountSortAction = () => {
     switch (countSort) {
       case "asc":
-        setPriceSort(null);
-        setCountSort("desc");
+        setCountSort(null);
         break;
       case "desc":
-        setCountSort(null);
+        setCountSort("asc");
         break;
       default:
         setPriceSort(null);

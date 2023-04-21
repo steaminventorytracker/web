@@ -1,45 +1,81 @@
 import React, { useEffect, useState } from "react";
 import { socket } from "../../App";
-import { Item as ItemType, Price } from "../../types/api";
-import Item from "../Item";
-import { InventoryItemData } from "../Inventory";
+import { Item as ItemType, JobResponse, Price } from "../../types/api";
+import "./style.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
-type JobProps = {
-  id: string;
-};
+type SocketResponse = { price: Price; item: ItemType };
 
-type JobResponse = { price: Price; item: ItemType };
+const formatter = new Intl.RelativeTimeFormat("fr", {
+  style: "short",
+  numeric: "auto",
+});
 
-function Job({ id }: React.PropsWithoutRef<JobProps>) {
-  const [prices, setPrices] = useState<JobResponse[]>([]);
+function Job() {
+  const [prices, setPrices] = useState<{ id: string; name: string }[]>([]);
+  const { job, steamId } = useLocation().state as JobResponse & {
+    steamId: string;
+  };
+  const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on(`/job/${id}/prices`, (data: JobResponse) => {
-      console.log("data", data);
-      setPrices((prices) => [...prices, data]);
+    if (!job) {
+      navigate("/");
+
+      return;
+    }
+
+    socket.on(`/job/${job.id}/prices`, (data: SocketResponse) => {
+      setPrices((prices) => [
+        {
+          id: data.item.id,
+          name: data.item.marketHashName,
+        },
+        ...prices,
+      ]);
+    });
+
+    socket.on(`/job/${job.id}`, () => {
+      console.log("job done");
+
+      navigate(`/inventory/${steamId}`);
+
+      socket.off(`/job/${job.id}/prices`);
     });
 
     return () => {
-      socket.off(`job/${id}/prices`);
+      socket.off(`job/${job.id}/prices`);
+      socket.off(`job/${job.id}`);
     };
-  }, [id]);
+  }, [job, navigate, steamId]);
 
   return (
-    <div>
-      <h1 className={"dark:text-white"}>JOB</h1>
-      <div className={"container grid grid-cols-5 gap-4"}>
-        {prices.map((price) => {
-          const inventory: InventoryItemData = {
-            Item: price.item,
-            count: 1,
-            total: Number(price.price.medianPrice),
-          };
+    <div
+      className={
+        "container relative flex flex-col items-center justify-center dark:text-white"
+      }
+    >
+      <div
+        className={
+          "flex flex-col items-center rounded border p-3 dark:bg-slate-800"
+        }
+      >
+        <div>{`Queue position: ${job.queue_length}`}</div>
+        <div>{`Estimated time: ${formatter.format(
+          job.estimated_time / 60,
+          "minute"
+        )}`}</div>
+      </div>
+      <div
+        className={
+          "test container relative flex max-h-60 w-96 flex-col items-center overflow-y-hidden dark:bg-slate-950"
+        }
+      >
+        {prices.map((price, index) => {
           return (
-            <Item
-              key={price.item.id}
-              inventory={inventory}
-              marketHashName={null}
-            />
+            <div key={price.id}>{`#${prices.length - index} ${
+              price.name
+            }`}</div>
           );
         })}
       </div>

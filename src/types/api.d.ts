@@ -14,7 +14,7 @@ export interface Item {
   gameId: string;
   createdAt: string;
   updatedAt: string;
-  Price?: Price[];
+  Price: Price[];
   tags: Tag[];
 }
 
