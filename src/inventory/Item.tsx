@@ -1,22 +1,11 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { InventoryItemData } from "./Inventory";
-import { Item as ItemType } from "../types/api";
+import Tag from "./grid/Tag";
+import { tags } from "./grid/InventoryGrid";
 
 type ItemProps = {
   inventory: InventoryItemData;
   marketHashName: string | null;
-};
-
-const getExterior = (item: ItemType) => {
-  const tag = item.tags.find((tag) => tag.category === "Exterior");
-
-  return tag?.localized_tag_name ?? "";
-};
-
-const getStatTrak = (item: ItemType) => {
-  const tag = item.tags.find((tag) => tag.category === "Quality");
-
-  return tag?.internal_name === "strange" ? tag.localized_tag_name ?? "" : "";
 };
 
 const highLight = (text: string, query: string | null) => {
@@ -47,14 +36,39 @@ export const currencyFormatter = new Intl.NumberFormat(navigator.language, {
 
 function Item({ inventory, marketHashName }: React.PropsWithoutRef<ItemProps>) {
   const item = inventory.Item;
-  const price = item.Price ? Number(item.Price.at(0)?.medianPrice) : null;
+  const price = item.Price.at(0)?.medianPrice;
+  const formattedPrice = price ? currencyFormatter.format(Number(price)) : null;
+  const totalFormattedPrice = inventory.total
+    ? currencyFormatter.format(inventory.total)
+    : null;
+
+  const priceData = useMemo(() => {
+    if (!price) return null;
+
+    return (
+      <div className={"flex flex-col items-center dark:text-white"}>
+        <div>{formattedPrice}</div>
+        {inventory.count > 1 && <div>{`Total : ${totalFormattedPrice}`}</div>}
+      </div>
+    );
+  }, [formattedPrice, inventory.count, price, totalFormattedPrice]);
+
+  const itemNameClass = [""];
+
+  if (item.isStattrak) {
+    itemNameClass.push("text-orange-400");
+  } else if (item.isSouvenir) {
+    itemNameClass.push("text-yellow-400");
+  } else {
+    itemNameClass.push("dark:text-white");
+  }
 
   return (
     <div
       key={inventory.Item.id}
-      className={"m-2 flex flex-col rounded-md border p-2 dark:bg-slate-900"}
+      className={"flex flex-col rounded-md border p-2 dark:bg-slate-900"}
     >
-      <div className={"h-14 dark:text-white"}>
+      <div className={"h-14 text-center " + itemNameClass.join(" ")}>
         {highLight(item.name, marketHashName)}
       </div>
       <div>
@@ -69,17 +83,16 @@ function Item({ inventory, marketHashName }: React.PropsWithoutRef<ItemProps>) {
             loading={"lazy"}
           />
         </div>
-        <div className={"flex h-20 flex-col justify-end dark:text-white"}>
-          <div>{`${getStatTrak(item)} ${getExterior(item)}`}</div>
-          {price && (
-            <>
-              <div>{`${currencyFormatter.format(price)} (${
-                inventory.count
-              })`}</div>
-              <div>{currencyFormatter.format(inventory.count * price)}</div>
-            </>
-          )}
-        </div>
+      </div>
+      {priceData}
+      <div className={"dark:text-white"}>
+        {tags.map(({ key, tag }) => {
+          return (
+            <Tag key={key} {...tag}>
+              {item[key] ? tag.title : null}
+            </Tag>
+          );
+        })}
       </div>
     </div>
   );

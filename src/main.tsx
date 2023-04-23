@@ -1,13 +1,30 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.scss";
+import Inventory, { fetchInventory } from "./inventory/Inventory";
+import React from "react";
+
+const router = createBrowserRouter([
+  {
+    path: "/*",
+    element: <App />,
+    children: [
+      {
+        path: "inventory/*",
+        lazy: () => import("./inventory/InventoryPage") as never,
+        children: [
+          {
+            path: ":steamId",
+            element: <Inventory />,
+            loader: fetchInventory,
+          },
+        ],
+      },
+    ],
+  },
+]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <BrowserRouter>
-    <div className={"min-w-screen min-h-screen dark:bg-slate-950"}>
-      <App />
-    </div>
-  </BrowserRouter>
+  <RouterProvider router={router} />
 );

@@ -2,26 +2,24 @@ import React, { useEffect, useState } from "react";
 import { socket } from "../../App";
 import { Item as ItemType, JobResponse, Price } from "../../types/api";
 import "./style.css";
-import { useLocation, useNavigate } from "react-router-dom";
 
 type SocketResponse = { price: Price; item: ItemType };
+
+type JobProps = {
+  job: JobResponse["job"];
+  onEndCb: () => void;
+};
 
 const formatter = new Intl.RelativeTimeFormat("fr", {
   style: "short",
   numeric: "auto",
 });
 
-function Job() {
+function Job({ job, onEndCb }: React.PropsWithoutRef<JobProps>) {
   const [prices, setPrices] = useState<{ id: string; name: string }[]>([]);
-  const { job, steamId } = useLocation().state as JobResponse & {
-    steamId: string;
-  };
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!job) {
-      navigate("/");
-
       return;
     }
 
@@ -38,8 +36,7 @@ function Job() {
     socket.on(`/job/${job.id}`, () => {
       console.log("job done");
 
-      navigate(`/inventory/${steamId}`);
-
+      onEndCb();
       socket.off(`/job/${job.id}/prices`);
     });
 
@@ -47,7 +44,7 @@ function Job() {
       socket.off(`job/${job.id}/prices`);
       socket.off(`job/${job.id}`);
     };
-  }, [job, navigate, steamId]);
+  }, [job, onEndCb]);
 
   return (
     <div

@@ -23,7 +23,7 @@ function App() {
   }, []);
 
   return (
-    <div className={""}>
+    <div className={"min-w-screen min-h-screen dark:bg-slate-950"}>
       <InventoryPage />
     </div>
   );

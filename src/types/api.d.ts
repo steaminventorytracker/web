@@ -6,16 +6,19 @@ export interface InventoryItem {
 }
 
 export interface Item {
-  id: string;
-  name: string;
-  marketHashName: string;
-  iconUrl: string;
-  iconUrlLarge: string;
-  gameId: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  name: string
+  marketHashName: string
+  iconUrl: string | null
+  iconUrlLarge: string | null
+  gameId: string
+  isStattrak: boolean
+  isSouvenir: boolean
+  wear: ItemWear | null
+  type: ItemType
+  createdAt: Date
+  updatedAt: Date
   Price: Price[];
-  tags: Tag[];
 }
 
 export interface Tag {

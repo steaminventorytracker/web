@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import Inventory from "./Inventory";
-import { Route, Routes, useNavigate } from "react-router-dom";
-import Job from "./job/Job";
+import { Outlet, useNavigate } from "react-router-dom";
 
 function InventoryPage() {
-  const vodox = "76561198102036162";
-  //const opaxx = "76561198078812689";
+  //const vodox = "76561198102036162";
+  const opaxx = "76561198078812689";
 
-  const [steamId, setSteamId] = useState<string>(vodox);
+  const [steamId, setSteamId] = useState<string>(opaxx);
   const navigate = useNavigate();
 
   return (
@@ -28,14 +26,8 @@ function InventoryPage() {
           fetch
         </button>
       </div>
-      <div>
-        <div></div>
-      </div>
-      <div className={"flex flex-col items-center"}>
-        <Routes>
-          <Route path="inventory/:steamId" element={<Inventory />} />
-          <Route path="job/:jobId" element={<Job />} />
-        </Routes>
+      <div className={"container mx-auto"}>
+        <Outlet />
       </div>
     </div>
   );
