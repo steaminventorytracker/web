@@ -3,7 +3,13 @@ import Item, { currencyFormatter } from "../Item";
 import { InventoryDict } from "../Inventory";
 import ActionButton from "./ActionButton";
 import { TagProps } from "./Tag";
-import { Item as ItemType } from "../../types/api";
+import {
+  Item as ItemType,
+  ItemTypeType,
+  ItemTypes,
+  ItemWear,
+  ItemWears,
+} from "../../types/api";
 
 export type TagType = {
   style: TagProps["style"];
@@ -67,12 +73,30 @@ function InventoryGrid({
   const [priceSort, setPriceSort] = React.useState<SortType>("desc");
   const [countSort, setCountSort] = React.useState<SortType>(null);
   const [marketHashName, setMarketHashName] = React.useState<string>("");
-  const [selectedTag, setSelectedTag] = React.useState<keyof ItemType | null>(
-    null
-  );
+  const [selectedTag, setSelectedTag] = React.useState<keyof ItemType | "">("");
+  const [selectedType, setSelectedType] = React.useState<ItemTypeType | "">("");
+  const [selectedWear, setSelectedWear] = React.useState<ItemWear | "">("");
 
   const renderedIds = useMemo(() => {
     let sortedIds = [...ids];
+
+    if (selectedWear) {
+      sortedIds = sortedIds.filter((id) => {
+        const inventory = inventoryDict[id];
+        const item = inventory.Item;
+
+        return item.wear === selectedWear;
+      });
+    }
+
+    if (selectedType) {
+      sortedIds = sortedIds.filter((id) => {
+        const inventory = inventoryDict[id];
+        const item = inventory.Item;
+
+        return item.type === selectedType;
+      });
+    }
 
     if (selectedTag) {
       sortedIds = sortedIds.filter((id) => {
@@ -100,7 +124,16 @@ function InventoryGrid({
       sortedIds = sortedIds.sort(handleSortByCount(countSort, inventoryDict));
 
     return sortedIds;
-  }, [countSort, ids, inventoryDict, marketHashName, priceSort, selectedTag]);
+  }, [
+    countSort,
+    ids,
+    inventoryDict,
+    marketHashName,
+    priceSort,
+    selectedTag,
+    selectedType,
+    selectedWear,
+  ]);
 
   const renderInventory = useMemo(() => {
     if (!inventoryDict) {
@@ -112,18 +145,18 @@ function InventoryGrid({
         key={id}
         inventory={inventoryDict[id]}
         marketHashName={marketHashName}
+        setSelectedTag={setSelectedTag}
+        setSelectedType={setSelectedType}
+        setSelectedWear={setSelectedWear}
       />
     ));
   }, [inventoryDict, marketHashName, renderedIds]);
 
   const inventoryValue = useMemo(() => {
-    return ids.reduce((acc, id) => {
-      const inventory = inventoryDict[id];
-      const item = inventory.Item;
-      const price = Number(item.Price?.at(0)?.medianPrice);
-      return acc + inventory.count * price;
+    return renderedIds.reduce((acc, id) => {
+      return acc + inventoryDict[id].total;
     }, 0);
-  }, [ids, inventoryDict]);
+  }, [inventoryDict, renderedIds]);
 
   useEffect(() => {
     console.log({
@@ -161,17 +194,8 @@ function InventoryGrid({
     }
   };
 
-  if (!inventoryDict) {
-    return <p>Loading...</p>;
-  }
-
   return (
-    <div className={"flex flex-col items-center gap-5"}>
-      <div className={"flex"}>
-        <span className={"text-xl dark:text-white"}>
-          Total: {currencyFormatter.format(inventoryValue)}
-        </span>
-      </div>
+    <div className={"flex flex-col items-center gap-5 dark:text-white"}>
       <div
         className={
           "flex w-full items-center gap-3 rounded-md p-3 dark:bg-slate-800"
@@ -196,19 +220,59 @@ function InventoryGrid({
             id="tag"
             onChange={(e) => setSelectedTag(e.target.value as keyof ItemType)}
             className={"rounded-md p-2 dark:bg-slate-900 dark:text-white"}
+            value={selectedTag as string}
           >
             <option value="">Choose a tag</option>
             {tags.map(({ key, tag }) => {
               return (
-                <option selected={selectedTag === key} key={key} value={key}>
+                <option key={key} value={key}>
                   {tag.title}
                 </option>
               );
             })}
           </select>
         </div>
+        <div>
+          <select
+            name="type"
+            id="type"
+            onChange={(e) => setSelectedType(e.target.value as ItemTypeType)}
+            className={"rounded-md p-2 dark:bg-slate-900 dark:text-white"}
+            value={selectedType as string}
+          >
+            <option value="">Choose a type</option>
+            {ItemTypes.map((key) => {
+              return (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div>
+          <select
+            name="wear"
+            id="wear"
+            onChange={(e) => setSelectedWear(e.target.value as ItemWear)}
+            className={"rounded-md p-2 dark:bg-slate-900 dark:text-white"}
+            value={selectedWear as string}
+          >
+            <option value="">Choose a wear</option>
+            {ItemWears.map((key) => {
+              return (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        <div className={"ml-auto dark:text-white"}>
+          Total: {currencyFormatter.format(inventoryValue)}
+        </div>
         <div
-          className={"ml-auto dark:text-white"}
+          className={""}
         >{`Rendered items : ${renderedIds.length} / ${ids.length}`}</div>
       </div>
       <div className={"grid w-full grid-cols-5 gap-6"}>{renderInventory}</div>

@@ -5,19 +5,29 @@ export interface InventoryItem {
   Item: Item;
 }
 
+export const ItemWears = [
+  "FACTORY_NEW",
+  "MINIMAL_WEAR",
+  "FIELD_TESTED",
+  "WELL_WORN",
+  "BATTLE_SCARRED",
+] as const;
+
+export type ItemWear = (typeof ItemWears)[number];
+
 export interface Item {
-  id: string
-  name: string
-  marketHashName: string
-  iconUrl: string | null
-  iconUrlLarge: string | null
-  gameId: string
-  isStattrak: boolean
-  isSouvenir: boolean
-  wear: ItemWear | null
-  type: ItemType
-  createdAt: Date
-  updatedAt: Date
+  id: string;
+  name: string;
+  marketHashName: string;
+  iconUrl: string | null;
+  iconUrlLarge: string | null;
+  gameId: string;
+  isStattrak: boolean;
+  isSouvenir: boolean;
+  wear: ItemWear | null;
+  type: ItemTypeType;
+  createdAt: Date;
+  updatedAt: Date;
   Price: Price[];
 }
 
@@ -46,3 +56,14 @@ export type JobResponse = {
     finished: boolean;
   };
 };
+
+export const ItemTypes = [
+  "KNIFE",
+  "GLOVE",
+  "STICKER",
+  "CASE",
+  "KEY",
+  "GUN",
+] as const;
+
+export type ItemTypeType = (typeof ItemTypes)[number];

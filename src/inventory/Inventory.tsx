@@ -2,7 +2,6 @@ import { InventoryItem, JobResponse } from "../types/api";
 import { LoaderFunctionArgs, useLoaderData } from "react-router-dom";
 import Job from "./job/Job";
 import InventoryGrid from "./grid/InventoryGrid";
-import { useEffect } from "react";
 
 export type InventoryItemData = InventoryItem & { total: number };
 export type InventoryDict = Record<string, InventoryItemData>;
@@ -13,8 +12,6 @@ function Inventory() {
   const handleOnJobEnd = () => {
     window.location.reload();
   };
-
-  useEffect(() => console.log({ inventories }), [inventories]);
 
   if (inventories && "job" in inventories) {
     return <Job job={inventories.job} onEndCb={handleOnJobEnd} />;

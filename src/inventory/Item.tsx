@@ -2,10 +2,14 @@ import React, { useMemo } from "react";
 import { InventoryItemData } from "./Inventory";
 import Tag from "./grid/Tag";
 import { tags } from "./grid/InventoryGrid";
+import { Item as ItemType, ItemTypeType, ItemWear } from "../types/api";
 
 type ItemProps = {
   inventory: InventoryItemData;
   marketHashName: string | null;
+  setSelectedTag: React.Dispatch<React.SetStateAction<keyof ItemType | "">>;
+  setSelectedType: React.Dispatch<React.SetStateAction<ItemTypeType | "">>;
+  setSelectedWear: React.Dispatch<React.SetStateAction<ItemWear | "">>;
 };
 
 const highLight = (text: string, query: string | null) => {
@@ -34,7 +38,13 @@ export const currencyFormatter = new Intl.NumberFormat(navigator.language, {
   currency: "CAD",
 });
 
-function Item({ inventory, marketHashName }: React.PropsWithoutRef<ItemProps>) {
+function Item({
+  inventory,
+  marketHashName,
+  setSelectedTag,
+  setSelectedType,
+  setSelectedWear,
+}: React.PropsWithoutRef<ItemProps>) {
   const item = inventory.Item;
   const price = item.Price.at(0)?.medianPrice;
   const formattedPrice = price ? currencyFormatter.format(Number(price)) : null;
@@ -46,8 +56,14 @@ function Item({ inventory, marketHashName }: React.PropsWithoutRef<ItemProps>) {
     if (!price) return null;
 
     return (
-      <div className={"flex flex-col items-center dark:text-white"}>
-        <div>{formattedPrice}</div>
+      <div
+        className={
+          "flex h-12 flex-col items-center justify-center dark:text-white"
+        }
+      >
+        <div>{`${formattedPrice} ${
+          inventory.count ? `(x${inventory.count})` : ""
+        }`}</div>
         {inventory.count > 1 && <div>{`Total : ${totalFormattedPrice}`}</div>}
       </div>
     );
@@ -85,10 +101,16 @@ function Item({ inventory, marketHashName }: React.PropsWithoutRef<ItemProps>) {
         </div>
       </div>
       {priceData}
-      <div className={"dark:text-white"}>
+      <div className={"flex h-5 gap-1.5 dark:text-white"}>
+        <Tag style={"blue"} onClick={() => setSelectedType(item.type)}>
+          {inventory.Item.type}
+        </Tag>
+        <Tag style={"green"} onClick={() => setSelectedWear(item.wear ?? "")}>
+          {inventory.Item.wear}
+        </Tag>
         {tags.map(({ key, tag }) => {
           return (
-            <Tag key={key} {...tag}>
+            <Tag key={key} {...tag} onClick={() => setSelectedTag(key)}>
               {item[key] ? tag.title : null}
             </Tag>
           );
