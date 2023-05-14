@@ -194,6 +194,13 @@ function InventoryGrid({
     }
   };
 
+  const handleClearFilters = () => {
+    setSelectedTag("");
+    setSelectedType("");
+    setSelectedWear("");
+    setMarketHashName("");
+  };
+
   return (
     <div className={"flex flex-col items-center gap-5 dark:text-white"}>
       <div
@@ -268,6 +275,7 @@ function InventoryGrid({
             })}
           </select>
         </div>
+        <ActionButton onClick={handleClearFilters}>Clear</ActionButton>
         <div className={"ml-auto dark:text-white"}>
           Total: {currencyFormatter.format(inventoryValue)}
         </div>

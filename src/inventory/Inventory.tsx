@@ -45,8 +45,15 @@ export const fetchInventory = async ({
   params,
   request,
 }: LoaderFunctionArgs) => {
+  const query = new URLSearchParams("");
+
+  query.set("forceRefresh", "false");
+
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/inventory/` + params.steamId,
+    `${import.meta.env.VITE_API_URL}/inventory/` +
+      params.steamId +
+      "?" +
+      query.toString(),
     { signal: request.signal }
   );
 
